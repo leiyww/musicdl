@@ -458,6 +458,57 @@ MiguMusicClient can be used directly without installing any extra CLI utilities 
   music_client.download(song_infos=song_infos)
   ```
 
+#### MOOVMusicClient
+
+[MOOV Music](https://moov.hk/) is a Hong Kong music streaming platform known for its strong Cantopop catalogue, 24-bit lossless audio, and rich collection of music videos and concert content.
+
+MOOVMusicClient provides music download support for the platform mentioned above.
+
+MOOVMusicClient works out of the box without requiring additional command-line tools such as ffmpeg or N_m3u8DL-RE. Simply install musicdl via pip, and you are ready to use it.
+
+(1) Command-Line Usage
+
+- Simple usage for searching and downloading songs, with login cookies:
+
+  `musicdl -m MOOVMusicClient -i "{'MOOVMusicClient': {'default_search_cookies': 'YOUR_COOKIES'}}"`
+
+- Simple usage for playlist parsing and downloading, with login cookies:
+
+  `musicdl -p "https://moov.hk/?utm_source=ios&utm_medium=copylink&utm_campaign=sharing_UPL-6742190#/playlist/PP1000002386" -m MOOVMusicClient -i "{'MOOVMusicClient': {'default_parse_cookies': 'YOUR_COOKIES'}}"`
+
+(2) Invoke It in Python
+
+- Simple usage for searching and downloading songs, with login cookies:
+
+  ```python
+  from musicdl import musicdl
+  
+  your_vip_cookies_with_str_or_dict_format = ''
+  init_music_clients_cfg = {
+    'MOOVMusicClient': {
+        'default_search_cookies': your_vip_cookies_with_str_or_dict_format,
+    }
+  }
+  music_client = musicdl.MusicClient(music_sources=['MOOVMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+  music_client.startcmdui()
+  ```
+
+- Simple usage for playlist parsing and downloading, with login cookies:
+
+  ```python
+  from musicdl import musicdl
+  
+  your_vip_cookies_with_str_or_dict_format = ''
+  init_music_clients_cfg = {
+    'MOOVMusicClient': {
+        'default_parse_cookies': your_vip_cookies_with_str_or_dict_format,
+    }
+  }
+  music_client = musicdl.MusicClient(music_sources=['MOOVMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+  song_infos = music_client.parseplaylist("https://moov.hk/?utm_source=ios&utm_medium=copylink&utm_campaign=sharing_UPL-6742190#/playlist/PP1000002386")
+  music_client.download(song_infos=song_infos)
+  ```
+
 #### NeteaseMusicClient (Built-in Premium Account)
 
 [NetEase Cloud Music](https://music.163.com/) is one of China’s most popular music streaming platforms, known for its vast song library, personalized recommendations, and active user community.
