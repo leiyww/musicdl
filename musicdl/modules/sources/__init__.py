@@ -27,8 +27,8 @@ from .soundcloud import SoundCloudMusicClient
 from .streetvoice import StreetVoiceMusicClient
 from .opengameart import OpenGameArtMusicClient
 from ..audiobooks import XimalayaMusicClient, LizhiMusicClient, QingtingMusicClient, LRTSMusicClient, ITunesMusicClient
-from ..common import GDStudioMusicClient, TuneHubMusicClient, MP3JuiceMusicClient, MyFreeMP3MusicClient, JBSouMusicClient, WJHEMusicClient
-from ..thirdpartysites import MituMusicClient, BuguyyMusicClient, YinyuedaoMusicClient, FiveSongMusicClient, FangpiMusicClient, TwoT58MusicClient, ZhuolinMusicClient, HTQYYMusicClient, FLMP3MusicClient, GequbaoMusicClient, JCPOOMusicClient, KKWSMusicClient, GequhaiMusicClient, LivePOOMusicClient, AlgerMusicClient
+from ..common import GDStudioMusicClient, TuneHubMusicClient, MP3JuiceMusicClient, MyFreeMP3MusicClient, JBSouMusicClient, XiaoBaiMusicClient
+from ..thirdpartysites import MituMusicClient, BuguyyMusicClient, YinyuedaoMusicClient, FiveSongMusicClient, FangpiMusicClient, TwoT58MusicClient, ZhuolinMusicClient, HTQYYMusicClient, FLMP3MusicClient, GequbaoMusicClient, JCPOOMusicClient, KKWSMusicClient, GequhaiMusicClient, LivePOOMusicClient
 
 
 '''MusicClientBuilder'''
@@ -46,11 +46,11 @@ class MusicClientBuilder(BaseModuleBuilder):
         'XimalayaMusicClient': XimalayaMusicClient,      'LizhiMusicClient': LizhiMusicClient,               'QingtingMusicClient': QingtingMusicClient,         'LRTSMusicClient': LRTSMusicClient,               'ITunesMusicClient': ITunesMusicClient,
         # Aggregators / Multi-Source Gateways
         'MP3JuiceMusicClient': MP3JuiceMusicClient,      'TuneHubMusicClient': TuneHubMusicClient,           'GDStudioMusicClient': GDStudioMusicClient,         'MyFreeMP3MusicClient': MyFreeMP3MusicClient,     'JBSouMusicClient': JBSouMusicClient,
-        'WJHEMusicClient': WJHEMusicClient,
+        'XiaoBaiMusicClient': XiaoBaiMusicClient,
         # Unofficial Download Sites / Scrapers
         'MituMusicClient': MituMusicClient,              'BuguyyMusicClient': BuguyyMusicClient,             'GequbaoMusicClient': GequbaoMusicClient,           'YinyuedaoMusicClient': YinyuedaoMusicClient,     'FLMP3MusicClient': FLMP3MusicClient,
         'FangpiMusicClient': FangpiMusicClient,          'FiveSongMusicClient': FiveSongMusicClient,         'KKWSMusicClient': KKWSMusicClient,                 'GequhaiMusicClient': GequhaiMusicClient,         'LivePOOMusicClient': LivePOOMusicClient,
-        'HTQYYMusicClient': HTQYYMusicClient,            'JCPOOMusicClient': JCPOOMusicClient,               'TwoT58MusicClient': TwoT58MusicClient,             'ZhuolinMusicClient': ZhuolinMusicClient,         'AlgerMusicClient': AlgerMusicClient,
+        'HTQYYMusicClient': HTQYYMusicClient,            'JCPOOMusicClient': JCPOOMusicClient,               'TwoT58MusicClient': TwoT58MusicClient,             'ZhuolinMusicClient': ZhuolinMusicClient, 
     }
 
 

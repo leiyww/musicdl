@@ -65,9 +65,9 @@
 
 # 🎉 What's New
 
+- 2026-07-04: Released musicdl v2.13.0 — perform routine maintenance on several commonly used clients.
 - 2026-06-24: Released musicdl v2.12.9 — fixed and cleaned up a large number of unavailable third-party interfaces, and added many new parsing interfaces with VIP account support, including QQ Music, Kuwo, TIDAL, Qobuz, and others. Also fixed bugs on platforms such as NetEase Cloud Music.
 - 2026-06-21: Released musicdl v2.12.8 — updated third-party API integrations for Deezer, YouTube, Spotify, and Qobuz; fixed the GDStudio music client and upgraded it to the latest API algorithm.
-- 2026-06-16: Released musicdl v2.12.7 — fix the freezing issue that occurs when Kugou, Kuwo, QQ Music, and NetEase Cloud Music access third-party APIs (refer to issues #79).
 
 
 # 🎵 Introduction
@@ -142,7 +142,7 @@ If you are a copyright or rights holder and believe that this repository infring
 |                                          | [MP3JuiceMusicClient](https://mp3juice.co/)                        | [MP3 Juice (SoundCloud+YouTube音乐源)](https://mp3juice.co/)                 | ✅        | ✅         | [mp3juice.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/common/mp3juice.py)                    |
 |                                          | [MyFreeMP3MusicClient](https://www.myfreemp3.com.cn/)              | [MyFreeMP3 (网易云+夸克音乐源)](https://www.myfreemp3.com.cn/)               | ✅        | ✅         | [myfreemp3.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/common/myfreemp3.py)                  |
 |                                          | [TuneHubMusicClient](https://tunehub.sayqz.com/docs)               | [TuneHub音乐 (QQ网易云酷我音乐源)](https://tunehub.sayqz.com/docs)           | ✅        | ✅         | [tunehub.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/common/tunehub.py)                      |
-|                                          | [WJHEMusicClient](https://music.wjhe.top/)                         | [HEMusic (Qobuz咪咕JOOX无损音源)](https://music.wjhe.top/)                   | ✅        | ✅         | [wjhe.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/common/wjhe.py)                            |
+|                                          | [XiaoBaiMusicClient](https://music.90svip.cn/)                     | [小白音乐 (QQ网易云酷我酷狗音乐源)](https://music.90svip.cn/)                | ✅        | ✅         | [xiaobai.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/common/xiaobai.py)                      |
 | **Unofficial Download Sites / Scrapers** | [AlgerMusicClient](http://music.alger.fun/#/)                      | [Alger Music](http://music.alger.fun/#/)                                     | ✅        | ✅         | [alger.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/thirdpartysites/alger.py)                 |
 |                                          | [BuguyyMusicClient](https://buguyy.top/)                           | [布谷音乐](https://buguyy.top/)                                              | ✅        | ✅         | [buguyy.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/thirdpartysites/buguyy.py)               |
 |                                          | [FangpiMusicClient](https://www.fangpi.net/)                       | [放屁音乐](https://www.fangpi.net/)                                          | ✅        | ✅         | [fangpi.py](https://github.com/CharlesPikachu/musicdl/blob/master/musicdl/modules/thirdpartysites/fangpi.py)               |
@@ -164,16 +164,17 @@ If you are a copyright or rights holder and believe that this repository infring
 
 Here are some projects built on top of musicdl,
 
-|  Project (EN)                                  |   Project (CN)          |   WeChat Article                                             |  Project Location                                                                                                |
-|  :----:                                        |   :----:                |   :----:                                                     |  :----:                                                                                                          |
-|  Music downloader GUI                          |   音乐下载器GUI界面     |   [click](https://mp.weixin.qq.com/s/fN1ORyI6lzQFqxf6Zk1oIg) |  [musicdlgui](https://github.com/CharlesPikachu/musicdl/tree/master/examples/musicdlgui)                         |
-|  Singer lyrics analysis                        |   歌手歌词分析          |   [click](https://mp.weixin.qq.com/s/I8Dy7CoM2ThnSpjoUaPtig) |  [singerlyricsanalysis](https://github.com/CharlesPikachu/musicdl/tree/master/examples/singerlyricsanalysis)     |
-|  Lyric-based song snippet retrieval            |   歌词获取歌曲片段      |   [click](https://mp.weixin.qq.com/s/Vmc1IhuhMJ6C5vBwBe43Pg) |  [searchlyrics](https://github.com/CharlesPikachu/musicdl/tree/master/examples/searchlyrics)                     |
+|  Project (EN)                                  |   Project (CN)                        |   WeChat Article                                             |  Project Location                                                                                                                      |
+|  :----:                                        |   :----:                              |   :----:                                                     |  :----:                                                                                                                                |
+|  Modern Web Music Player (Claude.ai)           |   现代化Web音乐播放器 (Claude.ai)     |   [click](https://mp.weixin.qq.com/s/fN1ORyI6lzQFqxf6Zk1oIg) |  [claudeai-modern-web-music-player](https://github.com/CharlesPikachu/musicdl/tree/master/examples/claudeai-modern-web-music-player)   |
+|  Music downloader GUI                          |   音乐下载器GUI界面                   |   [click](https://mp.weixin.qq.com/s/fN1ORyI6lzQFqxf6Zk1oIg) |  [musicdlgui](https://github.com/CharlesPikachu/musicdl/tree/master/examples/musicdlgui)                                               |
+|  Singer lyrics analysis                        |   歌手歌词分析                        |   [click](https://mp.weixin.qq.com/s/I8Dy7CoM2ThnSpjoUaPtig) |  [singerlyricsanalysis](https://github.com/CharlesPikachu/musicdl/tree/master/examples/singerlyricsanalysis)                           |
+|  Lyric-based song snippet retrieval            |   歌词获取歌曲片段                    |   [click](https://mp.weixin.qq.com/s/Vmc1IhuhMJ6C5vBwBe43Pg) |  [searchlyrics](https://github.com/CharlesPikachu/musicdl/tree/master/examples/searchlyrics)                                           |
 
-For example, the Music Downloader GUI looks/works like this,
+For example, the Modern Web Music Player (Claude.ai) looks/works like this,
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/CharlesPikachu/musicdl/master/examples/musicdlgui/screenshot.png" width="600" alt="musicdl logo" />
+  <img src="https://raw.githubusercontent.com/CharlesPikachu/musicdl/master/examples/claudeai-modern-web-music-player/screenshot.png" width="600" alt="musicdl logo" />
 </div>
 
 
