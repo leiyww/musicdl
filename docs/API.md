@@ -369,10 +369,15 @@ End users usually do not create this class directly. Instead, they use subclasse
 - `musicdl.modules.thirdpartysites.GequbaoMusicClient`
 - `musicdl.modules.thirdpartysites.GequhaiMusicClient`
 - `musicdl.modules.thirdpartysites.HTQYYMusicClient`
+- `musicdl.modules.thirdpartysites.ITingWaMusicClient`
 - `musicdl.modules.thirdpartysites.KKWSMusicClient`
 - `musicdl.modules.thirdpartysites.LivePOOMusicClient`
+- `musicdl.modules.thirdpartysites.LiziYYMusicClient`
 - `musicdl.modules.thirdpartysites.MituMusicClient`
+- `musicdl.modules.thirdpartysites.MGMP3MusicClient`
+- `musicdl.modules.thirdpartysites.SgogoMusicClient`
 - `musicdl.modules.thirdpartysites.TwoT58MusicClient`
+- `musicdl.modules.thirdpartysites.XiagebaMusicClient`
 - `musicdl.modules.thirdpartysites.YinyuedaoMusicClient`
 - `musicdl.modules.thirdpartysites.ZhuolinMusicClient`
 - `musicdl.modules.common.GDStudioMusicClient`

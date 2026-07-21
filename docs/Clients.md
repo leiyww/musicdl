@@ -2692,6 +2692,31 @@ There is no need to set up external command-line tools like ffmpeg or N_m3u8DL-R
   music_client.startcmdui()
   ```
 
+#### ITingWaMusicClient
+
+[itingwa.com](https://www.itingwa.com/) is a Chinese community-driven pure-music website where users can discover, stream, download, recommend, and discuss instrumental tracks, albums, and radio content.
+
+ITingWaMusicClient provides built-in support for downloading tracks from iTingWa.
+
+ITingWaMusicClient does not require external command-line tools such as ffmpeg or N_m3u8DL-RE. Simply install musicdl with pip, and you’re ready to go.
+
+(1) Command-Line Usage
+
+- Search for and Download Playable Music Files from Websites
+
+  `musicdl -m ITingWaMusicClient`
+
+(2) Invoke It in Python
+
+- Search for and Download Playable Music Files from Websites
+
+  ```python
+  from musicdl import musicdl
+
+  music_client = musicdl.MusicClient(music_sources=['ITingWaMusicClient'])
+  music_client.startcmdui()
+  ```
+
 #### KKWSMusicClient
 
 [kkws.cc](https://www.kkws.cc/) is a lossless music sharing website that provides free MP3 and high-quality music downloads, including trending songs and curated music collections.
@@ -2763,6 +2788,35 @@ LivePOOMusicClient operates without reliance on supplementary CLI tools, includi
   music_client.startcmdui()
   ```
 
+#### LiziYYMusicClient
+
+[liziyy.top](https://liziyy.top/) is a free music search and sharing platform where users can discover songs, view lyrics, and access available MP3 and lossless audio resources.
+
+To retrieve music from the platform above, we can use LiziYYMusicClient.
+
+LiziYYMusicClient works without additional command-line tools such as FFmpeg or N_m3u8DL-RE; installing musicdl via pip is sufficient for out-of-the-box use.
+
+(1) Command-Line Usage
+
+- Configure Quark Drive Cookies to Search for and Download High-Quality Music Files
+
+  `musicdl -m LiziYYMusicClient -i "{'LiziYYMusicClient': {'quark_parser_config': {'cookies': 'Your Quark Drive Login Cookies'}}}"`
+
+(2) Invoke It in Python
+
+- Configure Quark Drive Cookies to Search for and Download High-Quality Music Files
+
+  ```python
+  from musicdl import musicdl
+  
+  your_quark_drive_login_cookies_with_str_or_dict_format = ''
+  init_music_clients_cfg = {
+    'LiziYYMusicClient': {'quark_parser_config': {'cookies': your_quark_drive_login_cookies_with_str_or_dict_format}},
+  }
+  music_client = musicdl.MusicClient(music_sources=['LiziYYMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+  music_client.startcmdui()
+  ```
+
 #### MituMusicClient
 
 [qqmp3.vip](https://www.qqmp3.vip/) is an online music player that offers free streaming and high-quality downloads in formats such as MP3, FLAC, and WAV.
@@ -2802,6 +2856,90 @@ No extra setup. No external CLI tools. Just pip install musicdl and MituMusicCli
     'MituMusicClient': {'quark_parser_config': {'cookies': your_quark_drive_login_cookies_with_str_or_dict_format}},
   }
   music_client = musicdl.MusicClient(music_sources=['MituMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+  music_client.startcmdui()
+  ```
+
+#### MGMP3MusicClient
+
+[mgmp3.top](https://www.mgmp3.top/) is a music resource platform distinguished by its convenient search experience and flexible download options, including both packaged archives and individual MP3 links.
+
+Songs from the platform above can be downloaded using MGMP3MusicClient.
+
+No extra setup or external CLI tools are required; simply install musicdl via pip, and MGMP3MusicClient is ready to use.
+
+(1) Command-Line Usage
+
+- Search for and Download Playable Music Files from Websites
+
+  `musicdl -m MGMP3MusicClient`
+
+- Configure Quark Drive Cookies to Search for and Download Higher-Quality Music Files
+
+  `musicdl -m MGMP3MusicClient -i "{'MGMP3MusicClient': {'quark_parser_config': {'cookies': 'Your Quark Drive Login Cookies'}}}"`
+
+(2) Invoke It in Python
+
+- Search for and Download Playable Music Files from Websites
+
+  ```python
+  from musicdl import musicdl
+
+  music_client = musicdl.MusicClient(music_sources=['MGMP3MusicClient'])
+  music_client.startcmdui()
+  ```
+
+- Configure Quark Drive Cookies to Search for and Download Higher-Quality Music Files
+
+  ```python
+  from musicdl import musicdl
+  
+  your_quark_drive_login_cookies_with_str_or_dict_format = ''
+  init_music_clients_cfg = {
+    'MGMP3MusicClient': {'quark_parser_config': {'cookies': your_quark_drive_login_cookies_with_str_or_dict_format}},
+  }
+  music_client = musicdl.MusicClient(music_sources=['MGMP3MusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+  music_client.startcmdui()
+  ```
+
+#### SgogoMusicClient
+
+[sgogo.com](https://www.sgogo.com/) is a streamlined music discovery platform offering fast song and artist search, online previews, lyrics, detailed track information, and curated music resources in one place.
+
+SgogoMusicClient enables direct downloading of songs available on the platform above.
+
+Getting started is straightforward: install musicdl with pip, and SgogoMusicClient works immediately without any additional configuration or third-party command-line tools.
+
+(1) Command-Line Usage
+
+- Search for and Download Playable Music Files from Websites
+
+  `musicdl -m SgogoMusicClient`
+
+- Configure Quark Drive Cookies to Search for and Download Higher-Quality Music Files
+
+  `musicdl -m SgogoMusicClient -i "{'SgogoMusicClient': {'quark_parser_config': {'cookies': 'Your Quark Drive Login Cookies'}}}"`
+
+(2) Invoke It in Python
+
+- Search for and Download Playable Music Files from Websites
+
+  ```python
+  from musicdl import musicdl
+
+  music_client = musicdl.MusicClient(music_sources=['SgogoMusicClient'])
+  music_client.startcmdui()
+  ```
+
+- Configure Quark Drive Cookies to Search for and Download Higher-Quality Music Files
+
+  ```python
+  from musicdl import musicdl
+  
+  your_quark_drive_login_cookies_with_str_or_dict_format = ''
+  init_music_clients_cfg = {
+    'SgogoMusicClient': {'quark_parser_config': {'cookies': your_quark_drive_login_cookies_with_str_or_dict_format}},
+  }
+  music_client = musicdl.MusicClient(music_sources=['SgogoMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
   music_client.startcmdui()
   ```
 
@@ -2846,6 +2984,35 @@ TwoT58MusicClient is designed for hassle-free use: no additional CLI tools like 
     }
   }
   music_client = musicdl.MusicClient(music_sources=['TwoT58MusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+  music_client.startcmdui()
+  ```
+
+#### XiagebaMusicClient
+
+[xiageba.liumingye.cn](https://xiageba.liumingye.cn/) is a music aggregation platform for searching, streaming, and finding high-quality MP3 and lossless FLAC tracks shared across the web.
+
+Music from the platform mentioned above can be accessed using XiagebaMusicClient.
+
+XiagebaMusicClient does not rely on external command-line utilities such as FFmpeg or N_m3u8DL-RE. After installing musicdl with pip, it can be used directly without any additional setup.
+
+(1) Command-Line Usage
+
+- Configure Quark Drive Cookies to Search for and Download High-Quality Music Files
+
+  `musicdl -m XiagebaMusicClient -i "{'XiagebaMusicClient': {'quark_parser_config': {'cookies': 'Your Quark Drive Login Cookies'}}}"`
+
+(2) Invoke It in Python
+
+- Configure Quark Drive Cookies to Search for and Download High-Quality Music Files
+
+  ```python
+  from musicdl import musicdl
+  
+  your_quark_drive_login_cookies_with_str_or_dict_format = ''
+  init_music_clients_cfg = {
+    'XiagebaMusicClient': {'quark_parser_config': {'cookies': your_quark_drive_login_cookies_with_str_or_dict_format}},
+  }
+  music_client = musicdl.MusicClient(music_sources=['XiagebaMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
   music_client.startcmdui()
   ```
 
