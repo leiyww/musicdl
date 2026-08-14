@@ -8,6 +8,7 @@ WeChat Official Account (微信公众号):
 '''
 import os
 import re
+import json
 import copy
 import time
 import base64
@@ -16,9 +17,9 @@ import requests
 from bs4 import BeautifulSoup
 from contextlib import suppress
 from .base import BaseMusicClient
+from urllib.parse import urlparse, quote
 from pathvalidate import sanitize_filepath
 from ..utils.hosts import SPOTIFY_MUSIC_HOSTS
-from urllib.parse import urlparse, quote, urlunparse, urlencode, parse_qsl
 from rich.progress import Progress, TextColumn, BarColumn, TimeRemainingColumn, MofNCompleteColumn
 from ..utils.spotifyutils import SpotifyMusicClientPlaylistUtils, SpotifyMusicClientSearchUtils, SpotubeSecureClient
 from ..utils import legalizestring, resp2json, usesearchheaderscookies, safeextractfromdict, useparseheaderscookies, obtainhostname, hostmatchessuffix, extractdurationsecondsfromlrc, SongInfo, AudioLinkTester, LyricSearchClient, IOUtils, SongInfoUtils, RandomIPGenerator
@@ -68,43 +69,13 @@ class SpotifyMusicClient(BaseMusicClient):
         # parse
         (resp := requests.post('https://musicfab.io/api/spotify', json={"url": f"https://open.spotify.com/track/{song_id}"}, headers=headers, timeout=10, **request_overrides)).raise_for_status()
         download_url = safeextractfromdict((download_result := resp2json(resp=resp)), ['data', 'metadata', 'download'], None)
-        download_url_status: dict = self.audio_link_tester.test(url=download_url, request_overrides=request_overrides, renew_session=True)
+        (resp := requests.get(download_url, headers=headers, **request_overrides)).raise_for_status()
+        download_url_status = {'download_url': download_url, 'ok': True, 'file_size_bytes': len(resp.content), 'file_size': SongInfoUtils.byte2mb(len(resp.content)), 'ext': SongInfoUtils.naiveguessextfromaudiobytes(resp.content)}
         duration_in_secs = to_seconds_func(safeextractfromdict(download_result, ['data', 'metadata', 'duration'], '') or '0:00')
+        assert download_url_status['file_size_bytes'] > duration_in_secs * 8 * 1000 / 8
         song_info = SongInfo(
             raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(safeextractfromdict(download_result, ['data', 'metadata', 'name'], None)), singers=legalizestring(safeextractfromdict(download_result, ['data', 'metadata', 'artist'], None)), album=legalizestring(safeextractfromdict(download_result, ['data', 'metadata', 'album'], None) or safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)), 
-            ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(download_result, ['data', 'metadata', 'image'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, default_download_headers=self.default_download_headers,
-        )
-        # return
-        return song_info
-    '''_parsewithchrisk772000api'''
-    def _parsewithchrisk772000api(self, search_result: dict, request_overrides: dict = None):
-        # init
-        request_overrides, song_id, headers = request_overrides or {}, str(search_result['id']), {"Origin": "https://chrisk772000.github.io", "Referer": "https://chrisk772000.github.io/", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36", "X-Rapidapi-Host": "spotify-music-mp3-downloader-api.p.rapidapi.com", "X-Rapidapi-Key": "30959fad4amsh1c04bfa7b0509a0p109597jsnbd8a575ffad7"}
-        to_seconds_func = lambda x: (lambda s: 0 if not s else (lambda p: p[-3]*3600+p[-2]*60+p[-1] if len(p)>=3 else p[0]*60+p[1] if len(p)==2 else p[0] if len(p)==1 else 0)([int(v) for v in re.findall(r'\d+', s.replace('：', ':'))]) if (':' in s or '：' in s) else (lambda h,m,sec,num: (lambda tot: tot if tot>0 else num)(h*3600+m*60+sec))(int(mo.group(1)) if (mo:=re.search(r'(\d+)\s*(?:小时|时|h|hr)', s)) else 0, int(mo.group(1)) if (mo:=re.search(r'(\d+)\s*(?:分钟|分|m|min)', s)) else 0, (int(mo.group(1)) if (mo:=re.search(r'(\d+)\s*(?:秒|s|sec)', s)) else (int(mo.group(1)) if (mo:=re.search(r'(?:分钟|分|m|min)\s*(\d+)\b', s)) else 0)), int(mo.group(0)) if (mo:=re.search(r'\d+', s)) else 0))(str(x).strip().lower())
-        # parse
-        (resp := requests.get(f"https://spotify-music-mp3-downloader-api.p.rapidapi.com/download?link=https://open.spotify.com/track/{song_id}", headers=headers, timeout=10, **request_overrides)).raise_for_status()
-        download_url = safeextractfromdict((download_result := resp2json(resp=resp)), ['data', 'medias', 0, 'url'], None)
-        download_url_status: dict = self.audio_link_tester.test(url=download_url, request_overrides=request_overrides, renew_session=True)
-        duration_in_secs = to_seconds_func(safeextractfromdict(download_result, ['data', 'duration'], '') or '0:00')
-        song_info = SongInfo(
-            raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(safeextractfromdict(download_result, ['data', 'title'], None)), singers=legalizestring(safeextractfromdict(download_result, ['data', 'author'], None)), album=legalizestring(safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)), 
-            ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(download_result, ['data', 'thumbnail'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, default_download_headers=self.default_download_headers,
-        )
-        # return
-        return song_info
-    '''_parsewithbmediamdapi'''
-    def _parsewithbmediamdapi(self, search_result: dict, request_overrides: dict = None):
-        # init
-        request_overrides, song_id, headers = request_overrides or {}, str(search_result['id']), {"Referer": "https://bmedia-md-downloads.netlify.app/music", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",}
-        to_seconds_func = lambda x: (lambda s: 0 if not s else (lambda p: p[-3]*3600+p[-2]*60+p[-1] if len(p)>=3 else p[0]*60+p[1] if len(p)==2 else p[0] if len(p)==1 else 0)([int(v) for v in re.findall(r'\d+', s.replace('：', ':'))]) if (':' in s or '：' in s) else (lambda h,m,sec,num: (lambda tot: tot if tot>0 else num)(h*3600+m*60+sec))(int(mo.group(1)) if (mo:=re.search(r'(\d+)\s*(?:小时|时|h|hr)', s)) else 0, int(mo.group(1)) if (mo:=re.search(r'(\d+)\s*(?:分钟|分|m|min)', s)) else 0, (int(mo.group(1)) if (mo:=re.search(r'(\d+)\s*(?:秒|s|sec)', s)) else (int(mo.group(1)) if (mo:=re.search(r'(?:分钟|分|m|min)\s*(\d+)\b', s)) else 0)), int(mo.group(0)) if (mo:=re.search(r'\d+', s)) else 0))(str(x).strip().lower())
-        # parse
-        (resp := requests.get(f"https://bmedia-md-downloads.netlify.app/api-proxy/spotify?url=https://open.spotify.com/track/{song_id}", headers=headers, timeout=10, **request_overrides)).raise_for_status()
-        download_url = safeextractfromdict((download_result := resp2json(resp=resp)), ['data', 'download'], None)
-        download_url_status: dict = self.audio_link_tester.test(url=download_url, request_overrides=request_overrides, renew_session=True)
-        duration_in_secs = to_seconds_func(safeextractfromdict(download_result, ['data', 'metadata', 'duration'], '') or '0:00')
-        song_info = SongInfo(
-            raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(safeextractfromdict(download_result, ['data', 'metadata', 'title'], None)), singers=legalizestring(safeextractfromdict(download_result, ['data', 'metadata', 'artist'], None)), album=legalizestring(safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)), 
-            ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(download_result, ['data', 'metadata', 'images'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, default_download_headers=self.default_download_headers,
+            ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(download_result, ['data', 'metadata', 'image'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, downloaded_contents=resp.content
         )
         # return
         return song_info
@@ -136,13 +107,10 @@ class SpotifyMusicClient(BaseMusicClient):
         # init
         request_overrides, song_id, headers = request_overrides or {}, str(search_result['id']), {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149.0.0.0 Safari/537.36", "Referer": "https://savemytracks.com/", "Origin": "https://savemytracks.com"}
         session = requests.Session(); session.headers.update((headers := RandomIPGenerator().addrandomipv4toheaders(headers=headers)))
-        add_query_func = lambda url, **params: urlunparse((lambda u: (u.scheme, u.netloc, u.path, u.params, urlencode(dict(parse_qsl(u.query)) | params), u.fragment))(urlparse(str(url))))
         # parse
-        (resp := session.get("https://savemytracks.com/", timeout=20, **request_overrides)).raise_for_status(); decoded = []
-        for b64 in re.findall(r'data:text/javascript;base64,([^"]+)', resp.text):
-            with suppress(Exception): decoded.append(base64.b64decode(b64).decode("utf-8", "ignore"))
-        js = "\n".join(decoded); ajax_url = re.search(r"ajaxUrl:'([^']+)'", js).group(1); nonce = re.search(r"nonce:'([^']+)'", js).group(1)
-        m = re.search(r'"apiBase":"([^"]+)"', js); api_base = (m.group(1).replace("\\/", "/") if m else "https://treqly.onrender.com").rstrip("/")
+        (resp := session.get("https://savemytracks.com/", timeout=20, **request_overrides)).raise_for_status()
+        ajax_url = re.search(r"ajaxUrl:\s*'([^']+)'", resp.text).group(1); nonce = re.search(r"nonce:\s*'([^']+)'", resp.text).group(1)
+        api_base = re.search(r'"apiBase":"([^"]+)"', resp.text).group(1).replace("\\/", "/").rstrip("/")
         (resp := session.post(ajax_url, files={"action": (None, "vm_auth"), "nonce": (None, nonce)}, timeout=20, **request_overrides)).raise_for_status(); token = resp2json(resp=resp)["data"]["token"]
         (resp := session.get(f"{api_base}/api/spotify-info", params={"url": f"https://open.spotify.com/track/{song_id}"}, headers={"X-Req-V": token}, timeout=30, **request_overrides)).raise_for_status()
         (resp := session.post(f"{api_base}/api/download", json={"url": (download_result := resp2json(resp=resp))["youtubeUrl"], "resolution": "audio", "audio_format": "mp3",}, headers={"X-Req-V": token}, timeout=30, **request_overrides)).raise_for_status()
@@ -153,13 +121,14 @@ class SpotifyMusicClient(BaseMusicClient):
             if resp2json(resp=resp).get("status") == "completed" and resp2json(resp=resp).get("download_url"): download_url = resp2json(resp=resp)["download_url"]; break
             if resp2json(resp=resp).get("status") == "failed": raise RuntimeError(resp2json(resp=resp).get("error") or "job failed")
             time.sleep(2)
-        (resp := session.post(ajax_url, files={"action": (None, "vm_auth"), "nonce": (None, nonce)}, timeout=20, **request_overrides)).raise_for_status(); token = resp2json(resp=resp)["data"]["token"]
-        (resp := session.get((download_url := add_query_func(download_url, token=token)), **request_overrides)).raise_for_status()
+        else:
+            raise TimeoutError("download job timed out")
+        (resp := session.get(download_url, timeout=30, **request_overrides)).raise_for_status()
         download_url_status: dict = self.audio_link_tester.test(url=download_url, request_overrides=request_overrides, renew_session=True)
-        if download_url_status['file_size'] in {'NULL'}: download_url_status['file_size_bytes'], download_url_status['file_size'] = resp.content.__sizeof__(), SongInfoUtils.byte2mb(resp.content.__sizeof__())
+        if download_url_status['file_size'] in {'NULL'}: download_url_status['file_size_bytes'], download_url_status['file_size'] = len(resp.content), SongInfoUtils.byte2mb(len(resp.content))
         with suppress(Exception): duration_in_secs = 0; duration_in_secs = download_result.get('durationMs') / 1000
         song_info = SongInfo(
-            raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(download_result.get('title')), singers=legalizestring(legalizestring(download_result.get('artist'))), album=legalizestring(download_result.get('album') or safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)), 
+            raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(download_result.get('title')), singers=legalizestring(download_result.get('artist')), album=legalizestring(download_result.get('album') or safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)),
             ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=download_result.get('thumbnailUrl'), download_url=download_url_status['download_url'], download_url_status=download_url_status, downloaded_contents=resp.content,
         )
         # return
@@ -220,11 +189,58 @@ class SpotifyMusicClient(BaseMusicClient):
             ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'coverArt', 'sources', -1, 'url'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'coverArt', 'sources', -1, 'url'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, downloaded_contents=resp.content, default_download_headers=self.default_download_headers,
         )
         # return
-        return song_info     
+        return song_info
+    '''_parsewithspotidownmeapi'''
+    def _parsewithspotidownmeapi(self, search_result: dict, request_overrides: dict = None):
+        # init
+        request_overrides, song_id, session = request_overrides or {}, str(search_result['id']), requests.Session()
+        session.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'}
+        # parse
+        (resp := session.get('https://spotidown.me/en1', **request_overrides)).raise_for_status()
+        csrf = re.search(r'<meta\s+name=["\']csrf-token["\']\s+content=["\']([^"\']+)', resp.text).group(1)
+        (resp_track := session.post('https://spotidown.me/getTrackData', json={'spotify_url': f'https://open.spotify.com/track/{song_id}'}, headers={'X-CSRF-TOKEN': csrf, 'Referer': 'https://spotidown.me/en1', 'Origin': 'https://spotidown.me',}, **request_overrides)).raise_for_status()
+        (resp := session.post('https://spotidown.me/convert', json={'urls': f'https://open.spotify.com/track/{song_id}'}, headers={'X-CSRF-TOKEN': csrf, 'Referer': 'https://spotidown.me/en1', 'Origin': 'https://spotidown.me',}, **request_overrides)).raise_for_status()
+        download_url = safeextractfromdict((download_result := resp2json(resp=resp)), ['url'], None)
+        download_result.update(resp2json(resp=resp_track)); (resp := session.get(download_url, **request_overrides)).raise_for_status()
+        download_url_status: dict = self.audio_link_tester.test(url=download_url, request_overrides=request_overrides, renew_session=True)
+        if download_url_status['file_size'] in {'NULL'}: download_url_status['file_size_bytes'], download_url_status['file_size'] = resp.content.__sizeof__(), SongInfoUtils.byte2mb(resp.content.__sizeof__())
+        duration_in_secs = float(safeextractfromdict(download_result, ['data', 'duration_ms'], 0) or 0) / 1000
+        song_info = SongInfo(
+            raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(safeextractfromdict(download_result, ['data', 'name'], None)),  singers=legalizestring(', '.join([singer.get('name') for singer in (safeextractfromdict(download_result, ['data', 'artists'], None) or []) if isinstance(singer, dict) and singer.get('name')])), album=legalizestring(safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)), 
+            ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(download_result, ['data', 'album', 'images', 0, 'url'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, default_download_headers=self.default_download_headers, downloaded_contents=resp.content
+        )
+        # return
+        return song_info
+    '''_parsewithspotisaverapi'''
+    def _parsewithspotisaverapi(self, search_result: dict, request_overrides: dict = None):
+        # init
+        request_overrides, song_id, session = request_overrides or {}, str(search_result['id']), requests.Session()
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'Referer': 'https://spotisaver.net/en1', 'Accept': 'application/json', 'Cache-Control': 'no-cache',})
+        b64_func = lambda data: base64.urlsafe_b64encode(json.dumps(data, separators=(',', ':'), ensure_ascii=False).encode()).decode().rstrip('=')
+        # parse
+        (resp := session.get('https://spotisaver.net/en1', **request_overrides)).raise_for_status()
+        user_ip, ctx = re.search(r'const user_ip = "([^"]+)"', resp.text).group(1), b64_func({'id': song_id, 'type': 'track', 'lang': 'en'})
+        sign = session.get(f'https://spotisaver.net/api/get_signature.php', params={'action': 'get_playlist', 'ctx': ctx}, **request_overrides).json()
+        data = session.get(f'https://spotisaver.net/api/get_playlist.php', params={'id': song_id, 'type': 'track', 'lang': 'en'}, headers={'X-PT': sign['token'], 'X-PE': str(sign['exp'])}, **request_overrides).json()
+        track = data['tracks'][0]; ctx = b64_func({'lang': 'en', 'id': song_id, 'name': track['name'], 'duration_ms': str(track['duration_ms']),})
+        sign = session.get(f'https://spotisaver.net/api/get_signature.php', params={'action': 'download_track', 'ctx': ctx}, **request_overrides).json()
+        sig = b64_func({'token': sign['token'], 'exp': str(sign['exp'])})
+        (resp := session.post(f'https://spotisaver.net/api/download_track.php', params={'sig': sig}, json={'track': track, 'download_dir': 'downloads', 'filename_tag': 'SPOTISAVER', 'user_ip': user_ip, 'is_premium': False, 'lang': 'en',}, **request_overrides)).raise_for_status()
+        download_url = {'url': f'https://spotisaver.net/api/download_track.php', 'params': {'sig': sig}, 'json': {'track': track, 'download_dir': 'downloads', 'filename_tag': 'SPOTISAVER', 'user_ip': user_ip, 'is_premium': False, 'lang': 'en',}, 'method': 'post'}
+        download_result = {'track': track, 'download_url': download_url}
+        download_url_status = {'download_url': download_url, 'ok': True, 'file_size_bytes': len(resp.content), 'file_size': SongInfoUtils.byte2mb(len(resp.content)), 'ext': SongInfoUtils.naiveguessextfromaudiobytes(resp.content)}
+        duration_in_secs = float(safeextractfromdict(download_result, ['track', 'duration_ms'], 0) or 0) / 1000
+        assert download_url_status['file_size_bytes'] > duration_in_secs * 8 * 1000 / 8
+        song_info = SongInfo(
+            raw_data={'search': search_result, 'download': download_result, 'lyric': {}}, source=self.source, song_name=legalizestring(safeextractfromdict(download_result, ['track', 'name'], None)), singers=legalizestring(', '.join(safeextractfromdict(download_result, ['track', 'artists'], None) or [])), album=legalizestring(safeextractfromdict(download_result, ['track', 'album'], None) or safeextractfromdict(search_result, ['item', 'data', 'albumOfTrack', 'name'], None) or safeextractfromdict(search_result, ['itemV2', 'data', 'albumOfTrack', 'name'], None)), 
+            ext=download_url_status['ext'], file_size_bytes=download_url_status['file_size_bytes'], file_size=download_url_status['file_size'], identifier=song_id, duration_s=duration_in_secs, duration=SongInfoUtils.seconds2hms(duration_in_secs), lyric=None, cover_url=safeextractfromdict(download_result, ['track', 'image', 'url'], None), download_url=download_url_status['download_url'], download_url_status=download_url_status, default_download_headers=self.default_download_headers, downloaded_contents=resp.content
+        )
+        # return
+        return song_info
     '''_parsewiththirdpartapis'''
     def _parsewiththirdpartapis(self, search_result: dict, request_overrides: dict = None):
         if self.default_cookies or request_overrides.get('cookies'): return SongInfo(source=self.source)
-        for parser_func in [self._parsewithspowloadapi, self._parsewithspotmateapi, self._parsewithrapidapi, self._parsewithspotubedlapi, self._parsewithsavemytracksapi, self._parsewithbmediamdapi, self._parsewithchrisk772000api, self._parsewithmusicfabapi, ]:
+        for parser_func in [self._parsewithspowloadapi, self._parsewithspotmateapi, self._parsewithrapidapi, self._parsewithspotubedlapi, self._parsewithsavemytracksapi, self._parsewithspotidownmeapi, self._parsewithspotisaverapi, self._parsewithmusicfabapi, ]:
             song_info_flac = SongInfo(source=self.source, raw_data={'search': search_result, 'download': {}, 'lyric': {}})
             with suppress(Exception): song_info_flac = parser_func(search_result, request_overrides)
             if song_info_flac.with_valid_download_url and song_info_flac.ext in AudioLinkTester.VALID_AUDIO_EXTS: break
@@ -298,7 +314,7 @@ class SpotifyMusicClient(BaseMusicClient):
                 lossless_quality_is_sufficient = False if self.default_cookies or request_overrides.get('cookies') else True
                 with suppress(Exception): song_info = self._parsewithofficialapiv1(search_result=track_info, song_info_flac=song_info_flac, lossless_quality_is_sufficient=lossless_quality_is_sufficient, request_overrides=request_overrides)
                 if (song_info := song_info if song_info.with_valid_download_url else song_info_flac).with_valid_download_url: song_infos.append(song_info); continue
-                self.logger_handle.warning(f'Fail to parse song id {song_info.identifier} >>> {song_info.album} {song_info.song_name} {song_info.singers} {song_info.download_url}', disable_print=self.disable_print)
+                self.logger_handle.warning(f'Fail to parse track info {track_info}', disable_print=self.disable_print)
             main_process_context.advance(main_progress_id, 1); main_process_context.update(main_progress_id, description=f"{len(tracks_in_playlist)} Songs Found in Playlist {playlist_id} >>> Completed ({idx+1}/{len(tracks_in_playlist)}) SongInfo")
         # post processing
         playlist_name = legalizestring(safeextractfromdict(playlist_result_first, ['data', 'playlistV2', 'name'], None) or f"playlist-{playlist_id}")
